@@ -6,16 +6,19 @@ use std::{
     time::Duration,
 };
 
+use rust_book_server::ThreadPool;
+
 fn main() {
     let listener = TcpListener::bind("0.0.0.0:7878").unwrap();
-
-    for stream in listener.incoming() {
+    let pool = ThreadPool::new(4);
+    println!("{}", pool.number_of_threads());
+    for stream in listener.incoming().take(2) {
         let stream = stream.unwrap();
-
-        thread::spawn(|| {
+        pool.execute(|| {
             handle_connection(stream);
         });
     }
+    println!("Shutting Down");
 }
 
 fn handle_connection(mut stream: TcpStream) {
